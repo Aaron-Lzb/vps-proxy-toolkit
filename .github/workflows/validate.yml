@@ -43,3 +43,6 @@ jobs:
 
       - name: Test VPN diagnostics
         run: bash tests/vpn-check.sh
+
+      - name: Test vnStat diagnostics
+        run: bash tests/vnstat-check.sh

@@ -29,7 +29,7 @@
 
 ## 项目状态
 
-当前版本：**v1.5.0**
+当前版本：**v1.6.0**
 
 **v1.4.0 - 全局维护命令** 会把只读状态检查安装为 `hysteria-check`，日常维护无需先进入项目目录。命令通常会自动检测 VPS 公网 IPv4，也保留手工传入地址的方式。
 
@@ -280,6 +280,8 @@ Certbot 续期成功
 服务重启时，已有连接可能短暂中断。
 
 ## 状态检查
+
+v1.6.0 可选通过 vnStat 显示网卡今日和本月的接收、发送流量。统计的是默认 IPv4 网卡的全部流量，不区分代理服务，也不等同于 AWS 计费流量。Ubuntu 可选使用 `sudo apt update && sudo apt install vnstat` 安装；服务和查询命令见[维护说明](docs/zh-CN/vpn-maintenance.md)。
 
 推荐运行 `sudo vpn-check`。`hysteria-check` 继续兼容；两个命令运行同一脚本，通过 `hysteria-update` 同步更新。Xray 为可选服务，未安装时仅提示信息，已安装但停止则报告严重问题。本地监听不能证明外部连通，REALITY 不按普通本地 TLS 证书检查。
 

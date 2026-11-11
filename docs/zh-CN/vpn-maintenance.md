@@ -1,5 +1,9 @@
 # VPN 维护与 Xray
 
+## 可选网卡流量统计
+
+使用 `sudo apt update && sudo apt install vnstat` 安装，再运行 `sudo systemctl enable --now vnstat`。共享巡检脚本通过 vnStat 2.x 的 `--oneline` 查询默认 IPv4 网卡。未安装仅提示信息；服务未运行、无法确定网卡或输出格式不受支持时会警告。新建数据库可能暂时没有历史数据。统计从开始采集后生效，包含网卡全部流量，不区分 Hysteria2/Xray，也不等同于 AWS 计费。手动查询可用 `vnstat -i YOUR_INTERFACE -l`（Ctrl+C 退出）、`vnstat -i YOUR_INTERFACE -d`（每日）和 `vnstat -i YOUR_INTERFACE -m`（每月）。
+
 Hysteria2 使用 UDP 443；独立安装的 Xray VLESS + REALITY 使用 TCP 443。TCP 与 UDP 是不同传输协议，因此可以共存。本项目安装 Hysteria2，不提供 Xray 安装；Xray 安装、凭据与客户端配置仍由部署者负责。
 
 巡检支持 `hysteria-server.service`、`/usr/local/bin/hysteria`、`/etc/hysteria/config.yaml`，以及 `xray.service`、`/usr/local/bin/xray`、`/usr/local/etc/xray/config.json`。自定义 Xray 路径需要适配；标准文件验证通过不代表自定义服务正在使用它。REALITY 不使用 Hysteria2 的 Let's Encrypt 证书。

@@ -259,6 +259,43 @@ check_service_errors() {
   fi
 }
 
+check_network_traffic() {
+  local routes iface output rc version device day day_rx day_tx day_total day_rate month month_rx month_tx remaining
+  if ! command -v vnstat >/dev/null 2>&1; then
+    info 'Network traffic: vnStat is not installed (optional).'
+    return
+  fi
+  if ! command -v systemctl >/dev/null 2>&1 || ! systemctl is-active --quiet vnstat.service 2>/dev/null; then
+    warn 'Network traffic: vnStat service is not active or its state cannot be verified.'
+    return
+  fi
+  if ! command -v ip >/dev/null 2>&1 || ! routes="$(ip -4 route show default 2>/dev/null)"; then
+    warn 'Network traffic: default IPv4 interface could not be determined.'
+    return
+  fi
+  iface="$(awk 'NR == 1 {for (i=1; i<=NF; i++) if ($i == "dev") {print $(i+1); exit}}' <<<"${routes}")"
+  if [[ -z ${iface} ]]; then
+    warn 'Network traffic: no default IPv4 interface was found.'
+    return
+  fi
+  if output="$(LC_ALL=C vnstat -i "${iface}" --oneline 2>&1)"; then rc=0; else rc=$?; fi
+  if [[ ${output} == *'No data.'* && ${output} == *'database creation'* ]]; then
+    info "Network traffic: ${iface} has no history yet; vnStat begins collecting after installation."
+    return
+  elif ((rc != 0)); then
+    warn "Network traffic: vnStat cannot query ${iface}; check its database and monitored interfaces."
+    return
+  fi
+  IFS=';' read -r version device day day_rx day_tx day_total day_rate month month_rx month_tx remaining <<<"${output}"
+  if [[ ${version} != 1 || ${device} != "${iface}" || ! ${day} =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ || ! ${month} =~ ^[0-9]{4}-[0-9]{2}$ || -z ${day_rx} || -z ${day_tx} || -z ${day_total} || -z ${day_rate} || -z ${month_rx} || -z ${month_tx} || -z ${remaining} ]]; then
+    warn "Network traffic: vnStat returned an unrecognized summary for ${iface}."
+    return
+  fi
+  pass "Network traffic: vnStat is active and monitoring ${iface}."
+  info "Network traffic (${iface}): today RX ${day_rx}, TX ${day_tx}; this month RX ${month_rx}, TX ${month_tx}."
+  info 'Network traffic: interface totals include all traffic, not per-proxy usage or AWS billing.'
+}
+
 check_xray_config() {
   local binary=$1 config=$2
   if [[ ! -r ${config} ]]; then
@@ -564,6 +601,8 @@ printf '\nXray / REALITY\n'
 check_xray
 printf '\nSystem / Network\n'
 check_system_resources
+printf '\nNetwork Traffic\n'
+check_network_traffic
 
 printf '\n'
 if [[ ${#criticals[@]} -gt 0 ]]; then

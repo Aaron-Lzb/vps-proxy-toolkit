@@ -1,5 +1,9 @@
 # VPN maintenance and Xray
 
+## Optional interface traffic statistics
+
+Install with `sudo apt update && sudo apt install vnstat`, then run `sudo systemctl enable --now vnstat`. The shared check uses vnStat 2.x's `--oneline` output for the default IPv4 interface. Missing vnStat is informational; an inactive service, unavailable interface or unsupported output is a warning. A newly initialized database may have no history yet. Statistics start after collection begins and measure total interface traffic, not Hysteria2/Xray separately or AWS billing. For manual queries, use `vnstat -i YOUR_INTERFACE -l` (Ctrl+C to stop), `vnstat -i YOUR_INTERFACE -d` (daily), and `vnstat -i YOUR_INTERFACE -m` (monthly).
+
 Hysteria2 uses UDP 443; an independently installed Xray VLESS + REALITY service uses TCP 443. They can coexist because TCP and UDP are separate transports. This project installs Hysteria2, not Xray. Xray installation, credentials and client setup remain the operator's responsibility.
 
 The diagnostics support `hysteria-server.service`, `/usr/local/bin/hysteria`, `/etc/hysteria/config.yaml`, and `xray.service`, `/usr/local/bin/xray`, `/usr/local/etc/xray/config.json`. Custom Xray paths require adaptation; validation of the standard file does not prove a custom service uses it. REALITY does not require the Hysteria2 Let's Encrypt certificate.
