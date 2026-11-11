@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-# Run read-only maintenance checks for a Hysteria2 server.
-# Installed usage: hysteria-check [PUBLIC_IP]
+# Run read-only maintenance checks for Hysteria2 and optional Xray servers.
+# Installed usage: vpn-check [PUBLIC_IP] (hysteria-check remains an alias).
 # Repository usage: bash scripts/check-status.sh [PUBLIC_IP_OR_DOMAIN]
 #
 # The script never restarts services, renews certificates, refreshes package
@@ -223,8 +223,123 @@ detect_public_ipv4() {
   return 1
 }
 
-printf 'Hysteria2 maintenance status\n'
+check_listener_owner() {
+  local protocol=$1 expected=$2 sockets
+  if ! command -v ss >/dev/null 2>&1; then
+    warn "${protocol} 443 ownership: ss is unavailable."
+    return
+  fi
+  local flag=-t
+  [[ ${protocol} == UDP ]] && flag=-u
+  if ! sockets="$(ss -H -l -n -p "${flag}" 'sport = :443' 2>/dev/null)"; then
+    warn "${protocol} 443 ownership: unable to inspect local sockets."
+  elif [[ -z ${sockets} ]]; then
+    critical "${protocol} 443: no local listener."
+  elif [[ ${sockets} == *\"${expected}\"* ]]; then
+    pass "${protocol} 443: local listener belongs to ${expected}; external reachability is not tested."
+  elif [[ ${sockets} != *'users:('* ]]; then
+    warn "${protocol} 443: listener exists, but process ownership is unavailable; use sudo."
+  else
+    critical "${protocol} 443: expected ${expected} process was not found."
+  fi
+}
+
+check_service_errors() {
+  local unit=$1 count
+  if [[ ${EUID} -ne 0 ]] || ! command -v journalctl >/dev/null 2>&1; then
+    warn "${unit} logs: unable to verify full journal access; use sudo with journalctl installed."
+  elif count="$(journalctl -q -u "${unit}" --since '24 hours ago' -p err --no-pager -o json 2>/dev/null | awk 'END {print NR+0}')"; then
+    if [[ ${count} -gt 0 ]]; then
+      warn "${unit} logs: ${count} error-level entries in the available journal for the last 24 hours; review privately."
+    else
+      info "${unit} logs: no error-level entries in the available journal for the last 24 hours; retention may be incomplete."
+    fi
+  else
+    warn "${unit} logs: journal could not be queried."
+  fi
+}
+
+check_xray_config() {
+  local binary=$1 config=$2
+  if [[ ! -r ${config} ]]; then
+    warn 'Xray configuration: standard configuration is missing or unreadable; use sudo or verify custom deployment paths.'
+  elif "${binary}" run -test -config "${config}" >/dev/null 2>&1; then
+    pass 'Xray configuration: standard config.json validation passed (not an end-to-end connection test).'
+  else
+    critical 'Xray configuration: validation failed; inspect privately. Diagnostic output was suppressed.'
+  fi
+}
+
+check_xray() {
+  local state version
+  if ! command -v systemctl >/dev/null 2>&1 || ! state="$(systemctl show xray.service -p LoadState --value 2>/dev/null)"; then
+    warn 'Xray: service installation could not be verified.'
+    return
+  fi
+  if [[ ${state} == not-found ]]; then
+    info 'Xray: not installed; optional for Hysteria2-only deployments.'
+    return
+  elif [[ ${state} != loaded ]]; then
+    warn 'Xray: service unit is unavailable or not loaded.'
+    return
+  fi
+  if systemctl is-active --quiet xray.service 2>/dev/null; then
+    pass 'Xray: xray.service is active.'
+  else
+    critical 'Xray: installed service is not active.'
+  fi
+  check_listener_owner TCP xray
+  if [[ ! -x /usr/local/bin/xray ]]; then
+    warn 'Xray version/configuration: expected binary /usr/local/bin/xray is unavailable.'
+  else
+    version="$(/usr/local/bin/xray version 2>/dev/null | head -n 1 | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+' | head -n 1)"
+    if [[ -n ${version} ]]; then
+      info "Xray version: ${version}."
+    else
+      warn 'Xray version: unable to determine.'
+    fi
+    check_xray_config /usr/local/bin/xray /usr/local/etc/xray/config.json
+  fi
+  info 'Xray REALITY: no ordinary local TLS certificate check is applied.'
+  check_service_errors xray.service
+}
+
+check_system_resources() {
+  local value
+  if [[ -r /proc/uptime ]]; then
+    value="$(awk '{printf "%.0f", $1/3600}' /proc/uptime)"
+    info "Uptime: approximately ${value} hour(s)."
+  else
+    warn 'Uptime: unavailable.'
+  fi
+  if [[ -r /proc/loadavg ]]; then
+    value="$(awk '{print $1, $2, $3}' /proc/loadavg)"
+    info "CPU load averages (1/5/15 minutes): ${value}; load is not CPU utilization."
+  else
+    warn 'CPU load: unavailable.'
+  fi
+  value="$(awk '/^MemTotal:/ {t=$2} /^MemAvailable:/ {a=$2; found=1} END {if(t>0 && found) printf "%.0f", (t-a)*100/t}' /proc/meminfo 2>/dev/null)"
+  if [[ ${value} =~ ^[0-9]+$ ]]; then
+    if ((value >= 90)); then warn "Memory: ${value}% used (MemAvailable basis)."; else pass "Memory: ${value}% used (MemAvailable basis)."; fi
+  else
+    warn 'Memory: available-memory statistics could not be read.'
+  fi
+  if ! command -v ip >/dev/null 2>&1; then
+    warn 'Default IPv4 route: ip command unavailable.'
+  elif value="$(ip -4 route show default 2>/dev/null)"; then
+    if [[ -n ${value} ]]; then
+      pass 'Default IPv4 route: present; external reachability is not tested.'
+    else
+      critical 'Default IPv4 route: absent.'
+    fi
+  else
+    warn 'Default IPv4 route: unable to inspect.'
+  fi
+}
+
+printf 'VPN maintenance status\n'
 printf 'Read-only diagnostics; sudo may reveal additional details.\n\n'
+printf 'Hysteria2 / TLS\n'
 
 # 1. Hysteria2 systemd service state.
 if ! command -v systemctl >/dev/null 2>&1; then
@@ -263,7 +378,7 @@ certificate_path=""
 if [[ ! -e ${CONFIG_FILE} ]]; then
   critical "TLS certificate: ${CONFIG_FILE} was not found."
 elif [[ ! -r ${CONFIG_FILE} ]]; then
-  critical "TLS certificate: ${CONFIG_FILE} is unreadable; sudo may provide access."
+  warn "TLS certificate: ${CONFIG_FILE} is unreadable; sudo may provide access."
 else
   certificate_path="$(discover_certificate_path)"
   certificate_path="${certificate_path#\"}"
@@ -276,7 +391,7 @@ else
   elif [[ ${certificate_path} != /* ]]; then
     critical "TLS certificate: the configured certificate path is not absolute."
   elif [[ ! -r ${certificate_path} ]]; then
-    critical "TLS certificate: the configured certificate file is unreadable or missing."
+    warn "TLS certificate: the configured certificate file is unreadable or missing; unable to verify."
   elif ! command -v openssl >/dev/null 2>&1; then
     warn "TLS certificate: unable to inspect it because openssl is unavailable."
   else
@@ -336,6 +451,7 @@ else
 fi
 
 # 5. Pending Ubuntu security updates from existing local APT metadata only.
+printf '\nSystem / Security\n'
 os_id="unknown"
 os_pretty_name="Unknown"
 if [[ -r /etc/os-release ]]; then
@@ -419,6 +535,7 @@ fi
 
 # 10. Detect or validate the public IPv4. Domain arguments retain the existing
 # DNS-resolution behavior for backward compatibility.
+printf '\nNetwork / Service logs\n'
 if [[ -z ${TARGET} ]]; then
   if detect_public_ipv4 >/dev/null; then
     pass "Public IPv4: detected automatically."
@@ -440,6 +557,13 @@ elif dns_output="$(dig +short "${TARGET}" 2>/dev/null)"; then
 else
   critical "DNS resolution: lookup failed for the supplied domain."
 fi
+
+check_listener_owner UDP hysteria
+check_service_errors hysteria-server.service
+printf '\nXray / REALITY\n'
+check_xray
+printf '\nSystem / Network\n'
+check_system_resources
 
 printf '\n'
 if [[ ${#criticals[@]} -gt 0 ]]; then

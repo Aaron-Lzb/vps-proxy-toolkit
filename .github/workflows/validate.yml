@@ -40,3 +40,6 @@ jobs:
       - name: Test maintenance tool updater
         run: |
           bash tests/update-tools.sh
+
+      - name: Test VPN diagnostics
+        run: bash tests/vpn-check.sh

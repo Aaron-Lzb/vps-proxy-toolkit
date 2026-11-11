@@ -164,11 +164,13 @@ printf '\n[6/6] Installing the maintenance commands...\n'
 # the project-managed copies without creating duplicate commands or symlinks.
 if [[ ${check_script_available} -eq 1 ]]; then
   install -m 0755 "${CHECK_SCRIPT}" "${CHECK_COMMAND}"
+  ln -sfn hysteria-check /usr/local/bin/vpn-check
   if [[ ! -x ${CHECK_COMMAND} ]]; then
     printf '[ERROR] Maintenance command was not installed correctly: %s\n' "${CHECK_COMMAND}" >&2
     exit 1
   fi
   printf '[PASS] Installed maintenance command: %s\n' "${CHECK_COMMAND}"
+  printf 'Unified VPN diagnostics: sudo vpn-check\n'
 else
   printf '[WARN] Skipped hysteria-check because the source script was unavailable.\n'
 fi

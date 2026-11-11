@@ -29,11 +29,11 @@
 
 ## 项目状态
 
-当前版本：**v1.4.0**
+当前版本：**v1.5.0**
 
 **v1.4.0 - 全局维护命令** 会把只读状态检查安装为 `hysteria-check`，日常维护无需先进入项目目录。命令通常会自动检测 VPS 公网 IPv4，也保留手工传入地址的方式。
 
-`main` 分支还包含尚未正式发布的维护 UX 改进，包括彩色状态输出和 `hysteria-update`。这些功能完成发布验收前，`VERSION` 继续保持 `1.4.0`。
+v1.5.0 新增统一的只读 Hysteria2 与 Xray 巡检命令 `sudo vpn-check`，包括监听进程归属、系统资源、路由及不显示原文的日志摘要。支持范围与现有部署升级方式见 [VPN 维护与 Xray](docs/zh-CN/vpn-maintenance.md)。
 
 ## 项目特点
 
@@ -280,6 +280,8 @@ Certbot 续期成功
 服务重启时，已有连接可能短暂中断。
 
 ## 状态检查
+
+推荐运行 `sudo vpn-check`。`hysteria-check` 继续兼容；两个命令运行同一脚本，通过 `hysteria-update` 同步更新。Xray 为可选服务，未安装时仅提示信息，已安装但停止则报告严重问题。本地监听不能证明外部连通，REALITY 不按普通本地 TLS 证书检查。
 
 ```bash
 hysteria-check

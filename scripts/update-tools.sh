@@ -2,7 +2,7 @@
 
 # Update maintenance tools supplied by Aaron-Lzb/vps-hysteria2.
 #
-# This updater manages only /usr/local/bin/hysteria-check. It does not update
+# This updater manages hysteria-check and its vpn-check alias. It does not update
 # Hysteria2 itself or change server configuration, services, certificates,
 # firewall rules, packages, accounts, SSH, or network settings.
 
@@ -196,7 +196,7 @@ main() {
     return 1
   fi
 
-  for required_command in bash chmod cmp mktemp mv rm; do
+  for required_command in bash chmod cmp mktemp mv rm ln; do
     if ! command -v "${required_command}" >/dev/null 2>&1; then
       error "Required command is missing: ${required_command}"
       return 1
@@ -212,6 +212,8 @@ main() {
   trap 'exit 1' HUP INT TERM
 
   update_check_command "${CHECK_COMMAND}"
+  ln -sfn hysteria-check /usr/local/bin/vpn-check
+  pass 'vpn-check is available and uses the same updated maintenance script.'
 }
 
 if [[ ${BASH_SOURCE[0]} == "$0" ]]; then

@@ -29,11 +29,11 @@ Deploy Hysteria2 on a VPS and connect using any compatible Hysteria2 client. Sha
 
 ## Status
 
-Current version: **v1.4.0**
+Current version: **v1.5.0**
 
 **v1.4.0 - Global Maintenance Command** installs the read-only status helper as `hysteria-check`, so routine checks work from any directory. The command normally detects the VPS public IPv4 automatically and retains an optional manual form.
 
-The `main` branch also contains unreleased maintenance UX work, including color-coded status output and `hysteria-update`. `VERSION` remains `1.4.0` until that work completes release acceptance.
+v1.5.0 adds unified, read-only Hysteria2 and Xray diagnostics with `sudo vpn-check`, including listener ownership, system resources, routing and private log summaries. See [VPN maintenance and Xray](docs/vpn-maintenance.md) for support boundaries and upgrading existing installations.
 
 ## Features
 
@@ -244,6 +244,8 @@ load new certificate
 ```
 
 ## Health checks
+
+Recommended: `sudo vpn-check`. `hysteria-check` remains supported; both commands run the same script and receive the same updates through `hysteria-update`. Xray is optional; an absent Xray service is informational. Installed but stopped services are critical. Local listeners do not prove external connectivity. REALITY is not checked as an ordinary local TLS certificate.
 
 Run the status helper on the server:
 
