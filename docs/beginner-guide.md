@@ -212,13 +212,13 @@ In the server terminal, run each command and wait for it to finish. `apt-get upd
 ```bash
 sudo apt-get update
 sudo apt-get install -y git nano openssl
-git clone https://github.com/Aaron-Lzb/vps-hysteria2.git
+git clone https://github.com/Aaron-Lzb/vps-proxy-toolkit.git
 ```
 
-Expect package installation and clone completion, with a `vps-hysteria2` directory. If it already exists, establish whether it is an earlier deployment; do not overwrite it. Enter the directory and use the existing installer:
+Expect package installation and clone completion, with a `vps-proxy-toolkit` directory. If it already exists, establish whether it is an earlier deployment; do not overwrite it. Enter the directory and use the existing installer:
 
 ```bash
-cd vps-hysteria2
+cd vps-proxy-toolkit
 sudo bash scripts/install-hysteria.sh
 ```
 
@@ -259,7 +259,7 @@ openssl rand -hex 24
 
 Save the 48-character result privately as `YOUR_PASSWORD`.
 
-Work in `~/vps-hysteria2` on the server. Copying below is for first deployment only. First run `sudo test -e /etc/hysteria/config.yaml && echo 'CONFIG EXISTS'`. If it prints `CONFIG EXISTS`, this may be an upstream sample or an existing configuration: inspect and back it up, then proceed only if replacement is appropriate. Do not overwrite a working deployment.
+Work in `~/vps-proxy-toolkit` on the server. Copying below is for first deployment only. First run `sudo test -e /etc/hysteria/config.yaml && echo 'CONFIG EXISTS'`. If it prints `CONFIG EXISTS`, this may be an upstream sample or an existing configuration: inspect and back it up, then proceed only if replacement is appropriate. Do not overwrite a working deployment.
 
 If the existence check prints nothing and no permission error, the file is absent. If it exists, back it up with the following command before replacing it; numbered backups preserve earlier copies:
 

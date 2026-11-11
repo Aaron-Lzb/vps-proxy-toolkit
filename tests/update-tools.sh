@@ -184,7 +184,7 @@ else
   printf 'Skipping non-root entry-point checks while running tests as root.\n'
 fi
 
-grep -Fq 'https://raw.githubusercontent.com/Aaron-Lzb/vps-hysteria2/main/scripts/check-status.sh' "${TEST_UPDATE_SCRIPT}" \
+grep -Fq 'https://raw.githubusercontent.com/Aaron-Lzb/vps-proxy-toolkit/main/scripts/check-status.sh' "${TEST_UPDATE_SCRIPT}" \
   || fail "official fixed download source is missing"
 grep -Fq '/usr/local/bin/hysteria-check' "${TEST_UPDATE_SCRIPT}" \
   || fail "fixed maintenance target is missing"

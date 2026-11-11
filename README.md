@@ -1,12 +1,14 @@
-# VPS Hysteria2
+# VPS Proxy Toolkit
 
 English | [简体中文](README_CN.md)
 
-[![Release](https://img.shields.io/github/v/release/Aaron-Lzb/vps-hysteria2)](https://github.com/Aaron-Lzb/vps-hysteria2/releases)
-[![License](https://img.shields.io/github/license/Aaron-Lzb/vps-hysteria2)](LICENSE)
-[![Validation](https://github.com/Aaron-Lzb/vps-hysteria2/actions/workflows/validate.yml/badge.svg)](https://github.com/Aaron-Lzb/vps-hysteria2/actions/workflows/validate.yml)
+[![Release](https://img.shields.io/github/v/release/Aaron-Lzb/vps-proxy-toolkit)](https://github.com/Aaron-Lzb/vps-proxy-toolkit/releases)
+[![License](https://img.shields.io/github/license/Aaron-Lzb/vps-proxy-toolkit)](LICENSE)
+[![Validation](https://github.com/Aaron-Lzb/vps-proxy-toolkit/actions/workflows/validate.yml/badge.svg)](https://github.com/Aaron-Lzb/vps-proxy-toolkit/actions/workflows/validate.yml)
 
-A simple and practical Hysteria2 deployment solution for VPS servers, with TLS, systemd, automatic certificate renewal, status checking, and support for multiple Hysteria2 clients.
+A self-hosted VPS proxy toolkit for Hysteria2 deployment, Xray diagnostics, TLS maintenance, and optional vnStat traffic monitoring.
+
+Xray diagnostics support existing deployments; this project does not install Xray.
 
 Deploy Hysteria2 on a VPS and connect using any compatible Hysteria2 client. Shadowrocket remains a documented client example, but the server deployment is not tied to one client application.
 
@@ -297,9 +299,12 @@ Update the project-provided maintenance tools from any directory:
 sudo hysteria-update
 ```
 
-The updater currently manages only `/usr/local/bin/hysteria-check`. It downloads `scripts/check-status.sh` from the official `Aaron-Lzb/vps-hysteria2` repository into a temporary file, validates the Bash shebang and syntax, and replaces the installed command only after validation succeeds. The repository checkout does not need to remain on the VPS.
+The updater currently manages only `/usr/local/bin/hysteria-check`. It downloads `scripts/check-status.sh` from the official `Aaron-Lzb/vps-proxy-toolkit` repository into a temporary file, validates the Bash shebang and syntax, and replaces the installed command only after validation succeeds. The repository checkout does not need to remain on the VPS.
 
 The updater follows the repository `main` branch rather than the latest tagged Release, so it may install validated maintenance-tool changes newer than the current stable release. This does not update the installed Hysteria2 server binary or change the project `VERSION`.
+
+Existing installations with an older updater should install the current `scripts/update-tools.sh` once from a trusted checkout, using the commands in the [maintenance guide](docs/vpn-maintenance.md#upgrade-maintenance-tools-only). Updating only the check script does not update the updater itself.
+An existing checkout may still use its previous directory name; changing that local directory name is not required.
 
 `hysteria-update` is **not a Hysteria2 server updater**. It does not update the Hysteria2 binary, modify `/etc/hysteria/config.yaml`, restart services, change firewall rules or certificates, renew certificates, or run `apt update` or `apt upgrade`. If download or validation fails, the existing `hysteria-check` installation remains unchanged.
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Update maintenance tools supplied by Aaron-Lzb/vps-hysteria2.
+# Update maintenance tools supplied by Aaron-Lzb/vps-proxy-toolkit.
 #
 # This updater manages hysteria-check and its vpn-check alias. It does not update
 # Hysteria2 itself or change server configuration, services, certificates,
@@ -8,7 +8,7 @@
 
 set -Eeuo pipefail
 
-readonly CHECK_SOURCE_URL="https://raw.githubusercontent.com/Aaron-Lzb/vps-hysteria2/main/scripts/check-status.sh"
+readonly CHECK_SOURCE_URL="https://raw.githubusercontent.com/Aaron-Lzb/vps-proxy-toolkit/main/scripts/check-status.sh"
 readonly CHECK_COMMAND="/usr/local/bin/hysteria-check"
 readonly GREEN=$'\033[32m'
 readonly CYAN=$'\033[36m'

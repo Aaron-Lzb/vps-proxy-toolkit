@@ -212,13 +212,13 @@ sudo ufw status
 ```bash
 sudo apt-get update
 sudo apt-get install -y git nano openssl
-git clone https://github.com/Aaron-Lzb/vps-hysteria2.git
+git clone https://github.com/Aaron-Lzb/vps-proxy-toolkit.git
 ```
 
-应看到软件包安装完成和项目下载完成，当前目录中出现 `vps-hysteria2`。若目录已存在，先确认是否为此前部署，勿重复覆盖。进入项目目录并运行现有安装脚本：
+应看到软件包安装完成和项目下载完成，当前目录中出现 `vps-proxy-toolkit`。若目录已存在，先确认是否为此前部署，勿重复覆盖。进入项目目录并运行现有安装脚本：
 
 ```bash
-cd vps-hysteria2
+cd vps-proxy-toolkit
 sudo bash scripts/install-hysteria.sh
 ```
 
@@ -261,7 +261,7 @@ openssl rand -hex 24
 
 终端会显示一串 48 位字符。把它复制到私人备忘录，这就是后面所说的 `YOUR_PASSWORD`。
 
-在服务器的 `~/vps-hysteria2` 目录操作。以下复制只用于首次部署：先运行 `sudo test -e /etc/hysteria/config.yaml && echo 'CONFIG EXISTS'`。若显示 `CONFIG EXISTS`，可能是上游示例，也可能是已有配置；先检查并备份，确认可替换后再继续。不要覆盖已有有效部署。
+在服务器的 `~/vps-proxy-toolkit` 目录操作。以下复制只用于首次部署：先运行 `sudo test -e /etc/hysteria/config.yaml && echo 'CONFIG EXISTS'`。若显示 `CONFIG EXISTS`，可能是上游示例，也可能是已有配置；先检查并备份，确认可替换后再继续。不要覆盖已有有效部署。
 
 若存在性检查无输出且没有权限错误，表示文件不存在。若文件存在，替换前先用以下命令备份；编号备份会保留此前的副本：
 
