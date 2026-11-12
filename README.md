@@ -120,6 +120,10 @@ TCP 80 is mainly used for Certbot HTTP-01 validation; it is not the Hysteria2 se
 
 Create an Ubuntu VPS, assign a stable public IPv4 when available, allow inbound UDP 443 and TCP 80 when using Certbot HTTP-01 validation, and point `YOUR_DOMAIN` to the server. AWS users can follow the [reference AWS deployment guide](docs/aws-deployment.md).
 
+```bash
+dig YOUR_DOMAIN
+```
+
 The returned IP should match the VPS public IPv4.
 
 If the IP does not match, check the DNS A record and wait for DNS propagation.
@@ -132,7 +136,7 @@ Run the installer as root from a trusted checkout:
 sudo bash scripts/install-hysteria.sh
 ```
 
-The installer preserves existing Hysteria2 configuration and systemd unit files. It also installs standalone `/usr/local/bin/hysteria-check` and `/usr/local/bin/hysteria-update` commands that do not depend on keeping the repository checkout. Review the printed next steps before starting the service.
+The installer preserves existing Hysteria2 configuration and systemd unit files. It also installs standalone `/usr/local/bin/hysteria-check` and `/usr/local/bin/hysteria-update`, plus the `vpn-check` alias, without requiring the repository checkout afterward. Review the printed next steps before starting the service.
 
 ### 3. Configure the server
 

@@ -4,6 +4,8 @@
 
 ## 排查原则
 
+检查 Hysteria2 和可选的 Xray 服务时可运行 `sudo vpn-check`；`hysteria-check` 仍然可用。共享脚本也可显示 vnStat 网卡流量。Xray 支持路径、更新命令与统计限制见 [VPN 维护说明](vpn-maintenance.md)。
+
 遇到连接问题时，建议从底层到上层逐步确认：
 
 ```text

@@ -4,6 +4,8 @@ English | [简体中文](zh-CN/troubleshooting.md)
 
 This document summarizes common issues and solutions for the Hysteria2 encrypted networking deployment.
 
+For Hysteria2 and optional Xray diagnostics, run `sudo vpn-check`; `hysteria-check` remains supported. The shared check also reports optional vnStat interface traffic. See [VPN maintenance](vpn-maintenance.md) for supported Xray paths, updater and traffic-statistics limitations.
+
 ## Deployment checklist
 
 - [ ] Domain resolves correctly

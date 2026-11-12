@@ -6,6 +6,8 @@
 
 本项目在 Linux VPS 上部署 Hysteria2 代理服务，并使用 TLS、Certbot 和 systemd 管理服务端。客户端属于独立层：只要当前版本实现了本项目所需的 Hysteria2 连接字段，就可以使用同一台服务器。
 
+项目还可诊断独立安装的 TCP 443 Xray 服务，与 UDP 443 的 Hysteria2 并存；项目不安装 Xray。`vpn-check` 和 `hysteria-check` 共用巡检脚本，并可选提供 vnStat 网卡流量统计。支持路径及限制见 [VPN 维护说明](vpn-maintenance.md)。
+
 AWS EC2 是最初的 VPS 测试参考，不是必需基础设施。Shadowrocket 是项目维护的客户端示例，不是服务端依赖。
 
 系统包含：

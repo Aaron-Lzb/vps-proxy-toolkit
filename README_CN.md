@@ -126,7 +126,7 @@ AWS 用户可参考[中文 VPS 部署指南](docs/zh-CN/vps-deployment.md)。
 sudo bash scripts/install-hysteria.sh
 ```
 
-安装脚本会检查 root 权限和 Ubuntu 环境，保留已有配置及 systemd 服务文件，并安装独立的 `/usr/local/bin/hysteria-check` 和 `/usr/local/bin/hysteria-update`；之后移动或删除仓库副本不会破坏这些命令。
+安装脚本会检查 root 权限和 Ubuntu 环境，保留已有配置及 systemd 服务文件，并安装独立的 `/usr/local/bin/hysteria-check`、`/usr/local/bin/hysteria-update` 和 `vpn-check` 别名；之后移动或删除仓库副本不会破坏这些命令。
 
 ### 3. 准备服务端配置
 

@@ -6,6 +6,8 @@ English | [简体中文](zh-CN/architecture.md)
 
 This project deploys a Hysteria2 proxy server on a Linux VPS with TLS, Certbot, and systemd. Client software is a separate layer: any current client that implements the required Hysteria2 connection fields can use the server.
 
+It also diagnoses an independently installed Xray service on TCP 443 alongside Hysteria2 on UDP 443; it does not install Xray. The shared `vpn-check` / `hysteria-check` script includes optional vnStat interface traffic statistics. See [VPN maintenance](vpn-maintenance.md) for supported paths and limitations.
+
 AWS EC2 is the original tested VPS reference, not required infrastructure. Shadowrocket is the maintained client example, not a server dependency.
 
 The system consists of:
