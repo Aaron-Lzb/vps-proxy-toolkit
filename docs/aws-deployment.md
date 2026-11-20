@@ -49,7 +49,7 @@ The EC2 Security Group provides instance-level network filtering.
 | UDP | 443 | Hysteria2 traffic |
 | TCP | 80 | HTTP-01 certificate validation, when used |
 
-TCP 443 is not required by Hysteria2's UDP listener. Add it only if another HTTPS service or chosen deployment method needs it.
+TCP 443 is not required by Hysteria2's UDP listener. Allow TCP 443 separately if an existing Xray or another service listens there.
 
 For SSH, set the source to a trusted administrator IP address or controlled network whenever possible. Avoid exposing SSH to the entire Internet.
 
@@ -111,7 +111,7 @@ Wait for DNS propagation before requesting the certificate.
 Use the private key created or selected when launching the instance:
 
 ```bash
-ssh ubuntu@YOUR_SERVER_IP
+ssh -i YOUR_SSH_KEY.pem ubuntu@YOUR_SERVER_IP
 ```
 
 Never commit that private key or copy it into the repository.
@@ -139,7 +139,7 @@ You can also use the project health check:
 hysteria-check
 ```
 
-The installer makes this command available globally and normally detects the public IPv4 automatically. If detection fails, run `hysteria-check <PUBLIC_IP>`. Use `sudo hysteria-check` when certificate permissions prevent a complete TLS check.
+The installer makes this command available globally. The checker normally detects the public IPv4 automatically. If detection fails, run `hysteria-check <PUBLIC_IP>`. Use `sudo hysteria-check` when certificate permissions prevent a complete TLS check.
 
 If the service listens locally but clients time out, recheck the Security Group, any subnet network ACL, the instance firewall, and the client's current network.
 

@@ -229,10 +229,10 @@ Server → Client UDP 443
 Verify the equivalent provider rule (an AWS Security Group in the reference deployment):
 
 
-| Protocol | Port |
-| -------- | ---- |
-| UDP      | 443  |
-| TCP      | 443  |
+| Protocol | Port | Service |
+| --- | --- | --- |
+| UDP | 443 | Hysteria2 |
+| TCP | 443 | Only for a separately configured service such as Xray |
 
 
 
@@ -365,16 +365,6 @@ Example installation path:
 ```
 
 
-Content:
-
-
-```bash
-#!/bin/bash
-
-systemctl restart hysteria-server
-```
-
-
 Install the repository script with executable permissions:
 
 
@@ -416,7 +406,7 @@ sudo ss -tulpn
 
 
 ```bash
-curl ifconfig.me
+curl -4 https://ifconfig.me/ip
 ```
 
 

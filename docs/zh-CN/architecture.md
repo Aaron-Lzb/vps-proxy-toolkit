@@ -70,7 +70,7 @@ AWS EC2 是最初的 VPS 测试参考，不是必需基础设施。Shadowrocket 
 合适的 VPS 环境应支持：
 
 - Ubuntu 22.04 或 24.04
-- 可供 DNS 使用的公网 IPv4 或 IPv6 地址
+- 本指南的部署使用公网 IPv4 和指向该地址的 DNS A 记录
 - 入站 UDP 443
 - SSH 管理
 - Certbot 验证方式需要时可用的 TCP 80

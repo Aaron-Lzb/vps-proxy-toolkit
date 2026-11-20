@@ -22,6 +22,6 @@ sudo vpn-check
 
 完成这次升级后，`sudo hysteria-update` 更新共享脚本并确保别名存在。它跟随 `main`，不是最新 Release。之后可以删除仓库副本。`hysteria-check [PUBLIC_IP]` 和仓库调用继续兼容；自动检测失败时使用 `vpn-check <PUBLIC_IP>`。
 
-所有诊断均只读，包括 Xray `run -test`。不输出配置或日志原文。日志摘要统计最近 24 小时内可用的错误级别记录；历史保留不足不能证明期间没有错误。CPU 负载和运行时间仅供参考；内存达到 90% 警告，磁盘达到 80% 警告、90% 严重。权限不足或检查不可用会警告，不会误报通过。退出码 0 表示没有警告或严重问题，1 表示需要关注。颜色遵循 TTY、`NO_COLOR` 和 `TERM=dumb` 规则。
+所有诊断均只读，包括 Xray `run -test`。不输出配置或日志原文。日志摘要统计最近 24 小时内可用的错误级别记录；历史保留不足不能证明期间没有错误。CPU 负载和运行时间仅供参考；内存达到 90% 警告，磁盘达到 80% 警告、90% 严重。证书文件不可读或无法查看监听进程归属时会警告。缺少本地 APT 元数据时仅提示信息。安全更新检查统计本地可升级软件包列表中含 `-security` 的条目。退出码 0 表示没有警告或严重问题，1 表示需要关注。颜色遵循 TTY、`NO_COLOR` 和 `TERM=dumb` 规则。
 
 凭据须保留在 Git 之外。VLESS + REALITY 使用客户端 UUID、服务端私钥以及匹配的客户端公钥、服务器名称和 short ID。共享说明只能使用 `YOUR_UUID`、`YOUR_REALITY_PRIVATE_KEY`、`YOUR_REALITY_PUBLIC_KEY`、`YOUR_SERVER_NAME`、`YOUR_SHORT_ID` 等占位符，切勿复制真实配置到仓库。

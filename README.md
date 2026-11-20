@@ -43,7 +43,7 @@ v1.5.0 adds unified, read-only Hysteria2 and Xray diagnostics with `sudo vpn-che
 - QUIC transport over UDP 443 with TLS
 - systemd startup and failure recovery
 - Certbot certificate renewal with a deploy hook
-- Global `hysteria-check` command for read-only maintenance diagnostics
+- Unified, read-only `vpn-check` diagnostics for Hysteria2 and optional Xray, with interface traffic totals when vnStat is available
 - Global `hysteria-update` command for safely updating project maintenance tools
 - Provider-neutral server configuration
 - Client-neutral connection model
@@ -97,22 +97,18 @@ Before deployment, prepare:
 
 - An Ubuntu 22.04 or 24.04 VPS with a public IPv4 address
 - Permission to allow inbound UDP 443 in the provider firewall
-- A registered domain with an A or AAAA record pointing to the VPS
+- A domain with a DNS A record pointing to the VPS public IPv4
 - A TLS certificate issued through Certbot
 - A client version that explicitly supports Hysteria2
 - SSH access; the beginner guide explains your first login and terminal commands
 
 A stable public IPv4 is recommended so a VPS restart or address reassignment does not leave the domain pointing to an outdated address.
 
-Before deployment, verify that the domain already resolves to the VPS public IPv4 before requesting certificates or installing the service.
-
-Unless required, do not expose the SSH port to all public IP addresses.
+Verify that the domain resolves to the VPS public IPv4 before requesting a certificate or installing the service.
 
 Prefer allowing SSH access only from your trusted public IPv4 addresses.
 
-TCP 80 must be reachable for both issuance and later renewals when using this guide's HTTP-01 method. Restrict SSH access to trusted source addresses whenever possible.
-
-TCP 80 is mainly used for Certbot HTTP-01 validation; it is not the Hysteria2 service port.
+Keep TCP 80 reachable for Certbot HTTP-01 issuance and renewal. Hysteria2 listens on UDP 443.
 
 ## Quick start
 
@@ -151,8 +147,6 @@ Replace the applicable placeholders only in the private deployment copy:
 ```text
 YOUR_DOMAIN
 YOUR_PASSWORD
-YOUR_EMAIL
-YOUR_SERVER_IP
 ```
 
 Never commit the completed configuration.
@@ -168,7 +162,7 @@ sudo systemctl status hysteria-server
 
 Before continuing, confirm that the service status shows active (running).
 
-After the first deployment, run `hysteria-check` before configuring a client to confirm the service and listener state.
+After the first deployment, run `sudo vpn-check` before configuring a client to confirm the service and listener state.
 
 ### 5. Configure a client
 
@@ -253,23 +247,15 @@ load new certificate
 
 v1.6.0 optionally reports today's and this month's interface RX/TX using vnStat. It measures all traffic on the default IPv4 interface, not individual proxy usage or AWS billing. On Ubuntu, optionally install it with `sudo apt update && sudo apt install vnstat`; see [maintenance](docs/vpn-maintenance.md) for service and query commands.
 
-Recommended: `sudo vpn-check`. `hysteria-check` remains supported; both commands run the same script and receive the same updates through `hysteria-update`. Xray is optional; an absent Xray service is informational. Installed but stopped services are critical. Local listeners do not prove external connectivity. REALITY is not checked as an ordinary local TLS certificate.
+`vpn-check` and `hysteria-check` run the same read-only script and receive the same updates through `hysteria-update`. Xray is optional; an absent Xray service is informational. A stopped Hysteria2 service or a stopped, installed Xray service is critical. Local listeners do not prove external connectivity. REALITY is not checked as an ordinary local TLS certificate.
 
-Run the status helper on the server:
-
-```bash
-hysteria-check
-```
-
-If the key checks pass, no further action is normally required.
-
-For a routine VPS/Hysteria2 status check with the most complete visibility, use the following recommended command; it remains read-only:
+For routine checks on the VPS, run the following command to include protected certificate, listener and journal details. You can also run `vpn-check` without root.
 
 ```bash
-sudo hysteria-check
+sudo vpn-check
 ```
 
-Run it again after system updates or a reboot to confirm that the service and listener are operating normally.
+If the key checks pass, no further action is normally required. Run it again after system updates or a reboot to confirm that the service and listener are operating normally.
 
 The public IPv4 is normally detected automatically through short, read-only HTTPS requests. If detection is unavailable, provide the address explicitly:
 
@@ -277,18 +263,12 @@ The public IPv4 is normally detected automatically through short, read-only HTTP
 hysteria-check <PUBLIC_IP>
 ```
 
-The helper rejects private and special-use IPv4 ranges. It reports service and local UDP 443 state, TLS certificate lifetime, Certbot renewal timer state, pending Ubuntu security updates, reboot status, root filesystem use, OS and installed Hysteria2 versions, and public IPv4 or optional DNS information. It does not require root privileges and remains read-only: it never renews certificates, installs updates, restarts services, or changes configuration. For the most complete server-side diagnostics, `sudo hysteria-check` is recommended because elevated read access may reveal certificate or service details unavailable to an unprivileged user.
+The helper rejects private and special-use IPv4 addresses. Passing a domain instead checks whether DNS returns a record. The check also reports TLS certificate lifetime, Certbot timer status, reboot requirements and disk usage. Security update findings use existing local APT metadata.
 
 For repository development or an existing deployment that has not rerun the installer, the original entry point remains supported:
 
 ```bash
 bash scripts/check-status.sh <PUBLIC_IP>
-```
-
-An existing checkout can install or refresh only the global command without rerunning the full Hysteria2 installer:
-
-```bash
-sudo install -m 0755 scripts/check-status.sh /usr/local/bin/hysteria-check
 ```
 
 When run in an interactive terminal, status labels are color-coded for quicker scanning: `PASS` is green, `INFO` is cyan, `WARN` is yellow, and `CRITICAL` is red. Colors are automatically disabled for non-TTY output, `TERM=dumb`, or when `NO_COLOR` is set, so pipes, redirects, CI logs, and automation continue to receive plain text.
@@ -303,7 +283,7 @@ Update the project-provided maintenance tools from any directory:
 sudo hysteria-update
 ```
 
-The updater currently manages only `/usr/local/bin/hysteria-check`. It downloads `scripts/check-status.sh` from the official `Aaron-Lzb/vps-proxy-toolkit` repository into a temporary file, validates the Bash shebang and syntax, and replaces the installed command only after validation succeeds. The repository checkout does not need to remain on the VPS.
+The updater maintains `/usr/local/bin/hysteria-check` and ensures `/usr/local/bin/vpn-check` links to it. It downloads `scripts/check-status.sh` from the official `Aaron-Lzb/vps-proxy-toolkit` repository into a temporary file, validates the Bash shebang and syntax, and replaces the installed command only after validation succeeds. The repository checkout does not need to remain on the VPS.
 
 The updater follows the repository `main` branch rather than the latest tagged Release, so it may install validated maintenance-tool changes newer than the current stable release. This does not update the installed Hysteria2 server binary or change the project `VERSION`.
 

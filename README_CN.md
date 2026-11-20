@@ -43,7 +43,7 @@ v1.5.0 新增统一的只读 Hysteria2 与 Xray 巡检命令 `sudo vpn-check`，
 - 使用 QUIC、UDP 443 和 TLS
 - 使用 systemd 管理开机启动和异常恢复
 - 使用 Certbot 管理证书及续期钩子
-- 提供全局 `hysteria-check` 只读维护检查
+- 通过 `vpn-check` 统一只读巡检 Hysteria2 和可选的 Xray，安装 vnStat 后可查看网卡流量
 - 提供全局 `hysteria-update` 安全更新项目维护工具
 - 服务端配置不绑定 VPS 提供商或客户端品牌
 - 保留经过项目维护的 Shadowrocket 分流示例
@@ -84,7 +84,7 @@ VPS 提供 Ubuntu、公网 IPv4 和防火墙；Hysteria2 负责认证及加密�
 
 - Ubuntu 22.04 或 24.04 VPS
 - 可用于域名解析的公网 IPv4 地址
-- 可以修改 DNS 记录的域名
+- 具有 DNS A 记录并指向 VPS 公网 IPv4 的域名
 - 云平台防火墙允许 UDP 443
 - 使用 HTTP-01 申请及后续续期时可达的 TCP 80
 - 一个明确支持 Hysteria2 的客户端版本
@@ -95,8 +95,6 @@ TCP 80 主要用于 Certbot HTTP-01 验证，不是 Hysteria2 的服务端口。
 建议使用稳定公网 IPv4，避免 VPS 重启或重新分配地址后导致域名解析仍指向旧地址。
 
 开始部署前，建议先确认域名已经正确解析到 VPS 公网 IPv4，再继续申请证书和安装服务。
-
-如无特殊需要，SSH 端口不要对所有公网地址开放。
 
 建议仅允许自己的可信公网 IPv4 访问 SSH。
 
@@ -158,7 +156,7 @@ sudo systemctl status hysteria-server
 
 继续下一步前，确认服务状态显示为 active (running)。
 
-首次部署完成后，建议先运行 `hysteria-check` 确认服务和监听状态，再配置客户端。
+首次部署完成后，建议先运行 `sudo vpn-check` 确认服务和监听状态，再配置客户端。
 
 ### 5. 配置客户端
 
@@ -174,20 +172,6 @@ sudo systemctl status hysteria-server
 不同客户端界面和语法不同，应以当前安装版本的官方文档为准。
 
 首次连接建议先使用全局代理确认节点可正常访问网络，再配置复杂分流规则。
-
-### 6. 检查状态
-
-```bash
-hysteria-check
-```
-
-命令通常会通过简短的只读 HTTPS 请求自动检测公网 IPv4。检测失败时可手工提供：
-
-```bash
-hysteria-check <PUBLIC_IP>
-```
-
-脚本会拒绝私网和特殊用途 IPv4，并以只读方式检查 Hysteria2 服务、本机 UDP 443 监听、TLS 证书剩余时间、Certbot 续期定时器、安全更新、重启状态、根文件系统用量、系统和 Hysteria2 版本，以及公网 IPv4 或可选 DNS 信息。它不强制要求 root 权限，并始终只执行只读检查：不会续期证书、安装更新、重启服务或修改配置。需要尽可能完整的服务器诊断时，建议使用 `sudo hysteria-check`，因为普通用户可能无权读取部分证书或服务信息。
 
 ## 客户端配置
 
@@ -285,38 +269,28 @@ Certbot 续期成功
 
 v1.6.0 可选通过 vnStat 显示网卡今日和本月的接收、发送流量。统计的是默认 IPv4 网卡的全部流量，不区分代理服务，也不等同于 AWS 计费流量。Ubuntu 可选使用 `sudo apt update && sudo apt install vnstat` 安装；服务和查询命令见[维护说明](docs/zh-CN/vpn-maintenance.md)。
 
-推荐运行 `sudo vpn-check`。`hysteria-check` 继续兼容；两个命令运行同一脚本，通过 `hysteria-update` 同步更新。Xray 为可选服务，未安装时仅提示信息，已安装但停止则报告严重问题。本地监听不能证明外部连通，REALITY 不按普通本地 TLS 证书检查。
+`vpn-check` 和 `hysteria-check` 运行同一个只读脚本，通过 `hysteria-update` 同步更新。Xray 为可选服务，未安装时仅提示信息。Hysteria2 或已安装的 Xray 停止时会报告严重问题。本地监听不能证明外部连通，REALITY 不按普通本地 TLS 证书检查。
+
+日常巡检建议在 VPS 上使用 sudo，以读取受权限限制的证书、监听进程和日志信息。普通用户也可直接运行 `vpn-check`。
 
 ```bash
-hysteria-check
+sudo vpn-check
 ```
 
-如果关键检查项均通过，通常无需进一步操作。
+如果关键检查项均通过，通常无需进一步操作。建议在系统更新或重启后再次运行，确认服务和监听状态正常。
 
-日常检查 VPS/Hysteria2 状态并获取尽可能完整的信息时，推荐使用以下命令；它仍然只执行只读检查：
-
-```bash
-sudo hysteria-check
-```
-
-建议在系统更新或重启后再次运行 `hysteria-check`，确认服务和监听状态正常。
-
-自动检测不可用时：
+巡检通常通过简短的只读 HTTPS 请求自动检测公网 IPv4。检测失败时可手工指定：
 
 ```bash
 hysteria-check <PUBLIC_IP>
 ```
 
+巡检会拒绝私网和特殊用途 IPv4。传入域名时，脚本检查 DNS 是否返回记录。巡检还会报告 TLS 证书剩余有效期、Certbot 定时器、重启需求和磁盘用量。安全更新检查使用已有的本地 APT 元数据。
+
 仓库开发和尚未重新运行安装脚本的已有部署仍可使用：
 
 ```bash
 bash scripts/check-status.sh <PUBLIC_IP>
-```
-
-已有仓库副本也可以只安装或更新全局命令，无需重新运行完整的 Hysteria2 安装流程：
-
-```bash
-sudo install -m 0755 scripts/check-status.sh /usr/local/bin/hysteria-check
 ```
 
 在交互式终端中，状态标签会使用颜色方便快速识别：`PASS` 为绿色，`INFO` 为青色，`WARN` 为黄色，`CRITICAL` 为红色。非 TTY 输出、`TERM=dumb` 或设置 `NO_COLOR` 时会自动禁用颜色，因此管道、重定向、CI 和自动化脚本仍保持纯文本输出。
@@ -331,7 +305,7 @@ sudo install -m 0755 scripts/check-status.sh /usr/local/bin/hysteria-check
 sudo hysteria-update
 ```
 
-当前 updater 只管理 `/usr/local/bin/hysteria-check`。它从官方 `Aaron-Lzb/vps-proxy-toolkit` 仓库下载 `scripts/check-status.sh` 到临时文件，验证 Bash shebang 和语法后才替换已安装命令；VPS 无需长期保留 repository checkout。
+更新器维护 `/usr/local/bin/hysteria-check`，并确保 `/usr/local/bin/vpn-check` 链接到它。它从官方 `Aaron-Lzb/vps-proxy-toolkit` 仓库下载 `scripts/check-status.sh` 到临时文件，验证 Bash shebang 和语法后才替换已安装命令；VPS 无需长期保留 repository checkout。
 
 当前 updater 跟随仓库 `main` 分支，而不是最新的已标记 Release，因此可能获取比当前稳定版本更新、但已经过验证的维护工具代码。该操作不会更新已安装的 Hysteria2 服务端程序，也不会改变项目 `VERSION`。
 
@@ -368,12 +342,14 @@ vps-proxy-toolkit/
 │   ├── aws-deployment.md
 │   ├── beginner-guide.md
 │   ├── troubleshooting.md
+│   ├── vpn-maintenance.md
 │   ├── clients/shadowrocket.md
 │   └── zh-CN/
 │       ├── architecture.md
 │       ├── beginner-guide.md
 │       ├── vps-deployment.md
 │       ├── troubleshooting.md
+│       ├── vpn-maintenance.md
 │       └── clients/shadowrocket.md
 ├── scripts/
 │   ├── check-status.sh
@@ -382,7 +358,9 @@ vps-proxy-toolkit/
 │   └── update-tools.sh
 ├── tests/
 │   ├── check-status-color.sh
-│   └── update-tools.sh
+│   ├── update-tools.sh
+│   ├── vnstat-check.sh
+│   └── vpn-check.sh
 ├── LICENSE
 ├── README.md
 ├── README_CN.md

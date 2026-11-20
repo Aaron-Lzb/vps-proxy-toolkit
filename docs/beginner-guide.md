@@ -85,7 +85,7 @@ Security Group is AWS's cloud firewall; other providers may call it Firewall or 
 | TCP | 80 | `0.0.0.0/0` | This guide's HTTP-01 certificate issuance and automatic renewal |
 | UDP | 443 | `0.0.0.0/0`, or known client networks | Hysteria2 connections |
 
-`/32` means one IPv4 address. `0.0.0.0/0` means all IPv4 sources, not the server address to put in DNS. TCP 443 cannot replace UDP 443; no extra TCP 443 rule is needed without another HTTPS service. Retain normal outbound access for downloads, DNS, and destinations.
+`/32` means one IPv4 address. `0.0.0.0/0` means all IPv4 sources, not the server address to put in DNS. TCP 443 cannot replace UDP 443; allow TCP 443 separately if you also run the documented Xray service or another service on that port. Retain normal outbound access for downloads, DNS, and destinations.
 
 The server may also have a host firewall such as UFW; inspect it after SSH login in section 6. Cloud rules do not automatically open the host firewall. Do not permanently close TCP 80 after certificate issuance: that breaks this standalone renewal setup. See [Let's Encrypt HTTP-01](https://letsencrypt.org/docs/challenge-types/).
 
@@ -222,7 +222,7 @@ cd vps-proxy-toolkit
 sudo bash scripts/install-hysteria.sh
 ```
 
-The script downloads the upstream installer, installs Hysteria2, Certbot, and standalone `hysteria-check` / `hysteria-update` commands. It does not pin Hysteria2 to a particular version. `Installation preparation completed.` means preparation succeeded; the service has not yet been started, which is normal.
+The script downloads the upstream installer, installs Hysteria2, Certbot, and the standalone `hysteria-check` and `hysteria-update` commands, and the `vpn-check` link to `hysteria-check`. It does not pin Hysteria2 to a particular version. `Installation preparation completed.` means preparation succeeded; the service has not yet been started, which is normal.
 
 If an `ERROR` appears, stop and read it rather than repeatedly reinstalling. Use section 14 for troubleshooting.
 
@@ -301,12 +301,12 @@ sudo systemctl status hysteria-server --no-pager
 Expect `active (running)`. Then run:
 
 ```bash
-sudo hysteria-check
+sudo vpn-check
 ```
 
 Expected findings include an active service, local UDP 443 listener, valid TLS certificate, and active Certbot timer.
 
-Root is optional for `hysteria-check`; sudo provides certificate visibility and the command remains read-only. `HEALTHY` exits 0; warnings/critical findings exit 1. Interpret each finding: not every warning means deployment failed. If automatic IP detection fails, use `sudo hysteria-check YOUR_SERVER_IP`.
+Root is optional for `vpn-check`; sudo provides certificate visibility and the command remains read-only. `HEALTHY` exits 0; warnings/critical findings exit 1. Interpret each finding: not every warning means deployment failed. If automatic IP detection fails, use `sudo vpn-check YOUR_SERVER_IP`.
 
 Local checks cannot prove cloud-firewall or end-to-end client connectivity. Install the renewal hook next.
 
@@ -366,7 +366,7 @@ After logging into the VPS by SSH:
 
 ```bash
 # Read-only overall status
-sudo hysteria-check
+sudo vpn-check
 
 # Service state
 sudo systemctl status hysteria-server --no-pager
@@ -383,7 +383,7 @@ sudo certbot renew --dry-run
 
 `sudo hysteria-update` updates only this project's maintenance checker, not Hysteria2 itself, Ubuntu, or configuration.
 
-Log in at least monthly to run `sudo hysteria-check` and review traffic/billing alerts.
+Log in at least monthly to run `sudo vpn-check` and review traffic/billing alerts.
 
 ## 14. Common problems
 

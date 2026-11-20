@@ -70,7 +70,7 @@ This separation keeps server deployment independent from a particular client int
 A suitable provider must allow:
 
 - Ubuntu 22.04 or 24.04
-- A public IPv4 or IPv6 address supported by the chosen DNS record
+- A public IPv4 address with a matching DNS A record for the documented deployment
 - Inbound UDP 443
 - SSH administration
 - TCP 80 when the selected Certbot validation method requires it

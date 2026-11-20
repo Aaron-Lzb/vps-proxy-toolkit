@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Run read-only maintenance checks for Hysteria2 and optional Xray servers.
-# Installed usage: vpn-check [PUBLIC_IP] (hysteria-check remains an alias).
+# Installed usage: vpn-check [PUBLIC_IP_OR_DOMAIN] (links to hysteria-check).
 # Repository usage: bash scripts/check-status.sh [PUBLIC_IP_OR_DOMAIN]
 #
 # The script never restarts services, renews certificates, refreshes package

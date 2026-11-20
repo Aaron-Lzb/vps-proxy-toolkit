@@ -85,7 +85,7 @@ Security Group 是 AWS 的云防火墙；其他平台可能叫 Firewall 或安�
 | TCP | 80 | `0.0.0.0/0` | 本教程的 HTTP-01 证书申请和自动续期 |
 | UDP | 443 | `0.0.0.0/0`，或已知客户端网段 | Hysteria2 连接 |
 
-`/32` 表示单个 IPv4；`0.0.0.0/0` 表示所有 IPv4 来源，不是要填入 DNS 的服务器地址。TCP 443 不能替代 UDP 443；本教程没有其他 HTTPS 服务时不需要额外开放 TCP 443。保留正常出站网络访问，以便下载安装包、DNS 查询和访问目标。
+`/32` 表示单个 IPv4；`0.0.0.0/0` 表示所有 IPv4 来源，不是要填入 DNS 的服务器地址。TCP 443 不能替代 UDP 443；若还运行本项目所述的 Xray 或其他使用 TCP 443 的服务，则需单独放行 TCP 443。保留正常出站网络访问，以便下载安装包、DNS 查询和访问目标。
 
 服务器内部可能还有 UFW 等防火墙，SSH 登录后再按第六节检查。开放云端规则不等于内部防火墙自动开放。TCP 80 不能在证书申请后永久关闭，否则这个 standalone 续期方案会失败。见 [Let's Encrypt HTTP-01](https://letsencrypt.org/docs/challenge-types/)。
 
@@ -222,7 +222,7 @@ cd vps-proxy-toolkit
 sudo bash scripts/install-hysteria.sh
 ```
 
-脚本会从上游下载安装程序，安装 Hysteria2、Certbot 和独立的 `hysteria-check` / `hysteria-update`；它没有把 Hysteria2 固定为某个版本。安装结束出现 `Installation preparation completed.` 表示安装准备完成；服务此时还没有正式启动，这是正常的。
+脚本会从上游下载安装程序，安装 Hysteria2、Certbot 和独立的 `hysteria-check`、`hysteria-update`，并创建指向 `hysteria-check` 的 `vpn-check` 链接；它没有把 Hysteria2 固定为某个版本。安装结束出现 `Installation preparation completed.` 表示安装准备完成；服务此时还没有正式启动，这是正常的。
 
 如果出现红色 `ERROR`，不要反复重装。先复制错误文字，对照本文“常见问题”检查。
 
@@ -312,7 +312,7 @@ sudo systemctl status hysteria-server --no-pager
 看到绿色或文字形式的 `active (running)` 就表示服务已启动。按以下命令运行项目自带的完整检查：
 
 ```bash
-sudo hysteria-check
+sudo vpn-check
 ```
 
 理想结果包含：
@@ -322,7 +322,7 @@ sudo hysteria-check
 - TLS 证书有效；
 - Certbot 自动续期定时器正常。
 
-`hysteria-check` 不强制 root，`sudo` 有助于读取证书，仍是只读检查。`HEALTHY` 返回 0；warning/critical 返回 1，需要按提示判断原因，并非所有 warning 都代表部署失败。自动 IP 检测失败时可用 `sudo hysteria-check YOUR_SERVER_IP`。
+`vpn-check` 不强制 root，`sudo` 有助于读取证书，仍是只读检查。`HEALTHY` 返回 0；warning/critical 返回 1，需要按提示判断原因，并非所有 warning 都代表部署失败。自动 IP 检测失败时可用 `sudo vpn-check YOUR_SERVER_IP`。
 
 状态检查只能证明服务器本机大致正常，云防火墙和客户端到服务器的完整连接仍需要实际测试。下一步安装续期钩子。
 
@@ -382,7 +382,7 @@ Shadowrocket 不是默认或唯一选择。若使用它，在主界面点击 `+`
 
 ```bash
 # 查看整体健康状态，不会修改服务器
-sudo hysteria-check
+sudo vpn-check
 
 # 查看服务是否运行
 sudo systemctl status hysteria-server --no-pager
@@ -399,7 +399,7 @@ sudo certbot renew --dry-run
 
 `sudo hysteria-update` 只更新本项目的状态检查工具，不会更新 Hysteria2 本体、Ubuntu 或配置文件。
 
-建议至少每月登录一次，运行 `sudo hysteria-check`，并查看 VPS 商家的流量和账单告警。
+建议至少每月登录一次，运行 `sudo vpn-check`，并查看 VPS 商家的流量和账单告警。
 
 ## 十四、常见问题
 

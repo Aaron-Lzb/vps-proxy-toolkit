@@ -50,7 +50,7 @@ Security Group 是 AWS 在实例网络入口处提供的防火墙。其他云平
 | --- | --- | --- | --- |
 | TCP | 22 | SSH 管理 | 只允许可信管理员地址或网络 |
 | TCP | 80 | Certbot HTTP-01 验证 | 申请或续期方式需要时开放 |
-| TCP | 443 | HTTPS 兼容或其他服务 | Hysteria2 的 UDP 监听本身不依赖此端口，按实际需要开放 |
+| TCP | 443 | 已有的 Xray 或其他 TCP 服务 | Hysteria2 的 UDP 监听本身不依赖此端口，按实际需要开放 |
 | UDP | 443 | Hysteria2 客户端流量 | **核心端口，必须正确配置** |
 
 Hysteria2 在本项目中使用的是 **UDP 443**，不是 TCP 443。只开放 TCP 443 而遗漏 UDP 443，会导致兼容客户端无法建立 Hysteria2 连接。
@@ -163,7 +163,7 @@ sudo bash scripts/install-hysteria.sh
 - `YOUR_DOMAIN` 已解析到当前 VPS
 - TCP 80 可到达 VPS（使用 HTTP-01 standalone 方法时）
 - 没有其他服务占用所需验证端口
-- 已准备接收续期通知的 `YOUR_EMAIL`
+- 用于 Certbot 账户注册的 `YOUR_EMAIL`
 
 一种常见的 standalone 示例是：
 
@@ -311,7 +311,7 @@ Mihomo/Clash.Meta 兼容客户端可以在当前内核明确支持 Hysteria2 时
 hysteria-check
 ```
 
-安装脚本会全局安装该命令，并通常自动检测公网 IPv4。自动检测失败时运行 `hysteria-check <PUBLIC_IP>`；证书权限导致 TLS 信息不可读时，可运行 `sudo hysteria-check`。
+安装脚本会全局安装该命令。巡检时通常会自动检测公网 IPv4。自动检测失败时运行 `hysteria-check <PUBLIC_IP>`；证书权限导致 TLS 信息不可读时，可运行 `sudo hysteria-check`。
 
 手工检查清单：
 
