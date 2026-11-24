@@ -1,5 +1,7 @@
 # VPN 维护与 Xray
 
+[English](../vpn-maintenance.md) | 简体中文
+
 ## 可选网卡流量统计
 
 使用 `sudo apt update && sudo apt install vnstat` 安装，再运行 `sudo systemctl enable --now vnstat`。共享巡检脚本通过 vnStat 2.x 的 `--oneline` 查询默认 IPv4 网卡。未安装仅提示信息；服务未运行、无法确定网卡或输出格式不受支持时会警告。新建数据库可能暂时没有历史数据。统计从开始采集后生效，包含网卡全部流量，不区分 Hysteria2/Xray，也不等同于 AWS 计费。手动查询可用 `vnstat -i YOUR_INTERFACE -l`（Ctrl+C 退出）、`vnstat -i YOUR_INTERFACE -d`（每日）和 `vnstat -i YOUR_INTERFACE -m`（每月）。

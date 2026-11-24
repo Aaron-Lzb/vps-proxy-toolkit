@@ -1,5 +1,7 @@
 # VPN maintenance and Xray
 
+English | [简体中文](zh-CN/vpn-maintenance.md)
+
 ## Optional interface traffic statistics
 
 Install with `sudo apt update && sudo apt install vnstat`, then run `sudo systemctl enable --now vnstat`. The shared check uses vnStat 2.x's `--oneline` output for the default IPv4 interface. Missing vnStat is informational; an inactive service, unavailable interface or unsupported output is a warning. A newly initialized database may have no history yet. Statistics start after collection begins and measure total interface traffic, not Hysteria2/Xray separately or AWS billing. For manual queries, use `vnstat -i YOUR_INTERFACE -l` (Ctrl+C to stop), `vnstat -i YOUR_INTERFACE -d` (daily), and `vnstat -i YOUR_INTERFACE -m` (monthly).
